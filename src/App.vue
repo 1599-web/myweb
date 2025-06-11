@@ -19,6 +19,7 @@ const isScrolled = ref(false)
 
 const handleScroll = () => {
   isScrolled.value = window.scrollY > 50
+  console.log(isScrolled.value)
 }
 
 onMounted(() => {
