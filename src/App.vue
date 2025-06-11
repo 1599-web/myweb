@@ -23,6 +23,7 @@ const handleScroll = () => {
 }
 
 onMounted(() => {
+  console.log("aaaaaaaaaa")
   window.addEventListener('scroll', handleScroll)
 })
 
