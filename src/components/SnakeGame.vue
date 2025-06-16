@@ -26,7 +26,7 @@
               <p>吃</p>
               <p>{{ times }}</p>
             </div>
-            <div class="ztks" @click="autMove">暂停/开始</div>
+            <div class="ztks" @click="autMove">{{ isPlaying ? "暂停" : "开始" }}</div>
           </div>
         </div>
         <div class="control">
@@ -55,22 +55,15 @@ const colorList = color[0]
 const over = ref(false)
 const timer = ref(null)
 const speed = ref(600)
-const fx = ref(0)
+const fx = ref(0) // 方向：0左，1右，2上，3下
 const times = ref(0)
 const level = ref(1)
 const score = ref(0)
 const site = ref([0, 0])
+const isPlaying = ref(false)
 
-// 定义emit
-const emit = defineEmits(['back'])
-
-//初始化游戏
-onMounted(() => {
-  initGame()
-})
 // 初始化游戏框架
 function gameFrame() {
-  frame.value = []  // 确保先清空
   for (let i = 0; i < row.value; i++) {
     let a = []
     for (let j = 0; j < col.value; j++) {
@@ -86,34 +79,25 @@ function initSnake() {
     site: [9, 8, 9, 9, 9, 10],
     color: colorList[6],
   }
-  if (frame.value.length > 0) {
-    renderBlock(snake.value, frame.value, 1)
-  }
+  renderBlock(snake.value, frame.value, 1)
 }
 
 // 渲染方块
 function renderBlock(a, b, n) {
   const c = a.site
-  if (!c || !b) return
-  
   if (n === 1) {
     for (let i = 0; i < c.length; i += 2) {
-      if (c[i] >= 0 && c[i] < row.value && c[i + 1] >= 0 && c[i + 1] < col.value) {
-        b[c[i]][c[i + 1]].bg = a.color
-      }
+      b[c[i]][c[i + 1]].bg = a.color
     }
   } else if (n === 0) {
     for (let i = 0; i < c.length; i += 2) {
-      if (c[i] >= 0 && c[i] < row.value && c[i + 1] >= 0 && c[i + 1] < col.value) {
-        b[c[i]][c[i + 1]].bg = bg.value
-      }
+      b[c[i]][c[i + 1]].bg = bg.value
     }
   }
 }
 
 // 初始化食物
 function initFood() {
-  if (!frame.value.length) return
   sfood()
   const siteVal = site.value
   const foodColor = colorList[Math.floor(Math.random() * 7)]
@@ -159,7 +143,6 @@ function moveRight() {
 }
 
 function moveTop() {
-  console.log("Bb")
   if (!over.value && fx.value !== 3) {
     fx.value = 2
     clearInterval(timer.value)
@@ -177,14 +160,7 @@ function moveBottom() {
 
 // 自动移动定时器
 function startInterval(direction) {
-  if (!frame.value.length) return
-  
   timer.value = setInterval(() => {
-    if (!snake.value || !frame.value.length) {
-      clearInterval(timer.value)
-      return
-    }
-    
     renderBlock(snake.value, frame.value, 0)
     const headX = snake.value.site[0]
     const headY = snake.value.site[1]
@@ -260,11 +236,12 @@ function eat(i, j) {
 
 // 自动移动控制
 function autMove() {
-  console.log("Aa")
   if (timer.value) {
+    isPlaying.value = false
     clearInterval(timer.value)
     timer.value = null
   } else {
+    isPlaying.value = true
     if (fx.value === 0) moveLeft()
     else if (fx.value === 1) moveRight()
     else if (fx.value === 2) moveTop()
@@ -272,20 +249,12 @@ function autMove() {
   }
 }
 
-const initGame = () => {
+onMounted(() => {
   gameFrame()
   initSnake()
   initFood()
-  startInterval('right')
-}
-
-// 组件卸载时清理定时器
-onUnmounted(() => {
-  if (timer.value) {
-    clearInterval(timer.value)
-  }
+  autMove()
 })
-
 </script>
 
 <style scoped>
