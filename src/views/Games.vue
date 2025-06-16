@@ -1,166 +1,121 @@
 <template>
   <div class="games-container">
-    <div class="container">
-      <h2 class="page-title">小游戏</h2>
-      
-      <div class="games-grid">
-        <el-card
-          v-for="game in games"
-          :key="game.id"
-          class="game-card"
-          :body-style="{ padding: '0px' }"
-        >
-          <div class="game-image">
-            <el-image
-              :src="game.image"
-              fit="cover"
-              :preview-src-list="[game.image]"
-            />
+    <!-- 游戏选择区域 -->
+    <div class="game-selection" v-if="!currentGame">
+      <h2 class="section-title">游戏中心</h2>
+      <div class="game-grid">
+        <div class="game-card" v-for="game in games" :key="game.id" @click="selectGame(game)">
+          <div class="game-icon" :style="{ background: game.gradient }">
+            <i :class="game.icon"></i>
           </div>
-          <div class="game-content">
-            <h3 class="game-title">{{ game.title }}</h3>
-            <p class="game-description">{{ game.description }}</p>
-            <div class="game-meta">
-              <span class="game-type">
-                <el-icon><game-controller /></el-icon>
-                {{ game.type }}
-              </span>
-              <span class="game-difficulty">
-                <el-icon><star /></el-icon>
-                难度: {{ game.difficulty }}
-              </span>
-            </div>
-            <el-button
-              type="primary"
-              class="play-button"
-              @click="startGame(game.id)"
-            >
-              开始游戏
-            </el-button>
+          <div class="game-info">
+            <h3>{{ game.name }}</h3>
+            <p>{{ game.description }}</p>
           </div>
-        </el-card>
+        </div>
       </div>
     </div>
+
+    <!-- 游戏区域 -->
+    <SnakeGame v-if="currentGame === 'snake'" @back="currentGame = null" />
+    <TetrisGame v-if="currentGame === 'tetris'" @back="currentGame = null" />
   </div>
 </template>
 
 <script setup>
 import { ref } from 'vue'
-import { GameController, Star } from '@element-plus/icons-vue'
+import SnakeGame from '@/components/SnakeGame.vue'
+import TetrisGame from '@/components/TetrisGame.vue'
 
-// 游戏数据（示例）
+// 游戏选择相关
+const currentGame = ref(null)
 const games = ref([
   {
-    id: 1,
-    title: '2048',
-    description: '经典的2048数字合并游戏，通过方向键移动方块，相同数字的方块相撞时会合并。',
-    type: '益智',
-    difficulty: '中等',
-    image: 'https://via.placeholder.com/300x200?text=2048'
+    id: 'snake',
+    name: '贪吃蛇',
+    description: '经典的贪吃蛇游戏，控制蛇吃食物成长',
+    icon: 'fas fa-snake',
+    gradient: 'linear-gradient(135deg, #FFA7EB 0%, #F026A8 100%)'
   },
   {
-    id: 2,
-    title: '贪吃蛇',
-    description: '控制蛇吃食物并不断变长，注意不要撞到墙壁或自己的身体。',
-    type: '休闲',
-    difficulty: '简单',
-    image: 'https://via.placeholder.com/300x200?text=Snake'
+    id: 'tetris',
+    name: '俄罗斯方块',
+    description: '即将推出...',
+    icon: 'fas fa-shapes',
+    gradient: 'linear-gradient(135deg, #DFA1FF 0%, #9A36F0 100%)'
   },
   {
-    id: 3,
-    title: '俄罗斯方块',
-    description: '经典的俄罗斯方块游戏，通过旋转和移动方块来消除行。',
-    type: '益智',
-    difficulty: '中等',
-    image: 'https://via.placeholder.com/300x200?text=Tetris'
+    id: 'puzzle',
+    name: '拼图游戏',
+    description: '即将推出...',
+    icon: 'fas fa-puzzle-piece',
+    gradient: 'linear-gradient(135deg, #9EAAFF 0%, #3846F4 100%)'
   }
 ])
 
-// 开始游戏
-const startGame = (gameId) => {
-  // TODO: 实现游戏启动逻辑
-  console.log('Starting game:', gameId)
+const selectGame = (game) => {
+  if (game.id === 'snake' || game.id === 'tetris') {
+    currentGame.value = game.id
+  }
 }
 </script>
 
 <style scoped>
 .games-container {
-  padding: 40px 0;
+  min-height: 100vh;
+  padding: 2rem;
+  background: #f5f7fa;
 }
 
-.page-title {
-  margin-bottom: 30px;
-  color: #333;
+.section-title {
   text-align: center;
+  font-size: 2rem;
+  color: #2c3e50;
+  margin-bottom: 2rem;
 }
 
-.games-grid {
+.game-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 30px;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .game-card {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   transition: transform 0.3s ease;
+  cursor: pointer;
 }
 
 .game-card:hover {
   transform: translateY(-5px);
 }
 
-.game-image {
-  height: 200px;
-  overflow: hidden;
-}
-
-.game-image :deep(.el-image) {
-  width: 100%;
-  height: 100%;
-}
-
-.game-content {
-  padding: 20px;
-}
-
-.game-title {
-  margin: 0 0 10px;
-  font-size: 1.2em;
-  color: #333;
-}
-
-.game-description {
-  color: #666;
-  margin-bottom: 15px;
-  line-height: 1.5;
-}
-
-.game-meta {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 15px;
-  color: #999;
-  font-size: 0.9em;
-}
-
-.game-type,
-.game-difficulty {
+.game-icon {
+  height: 160px;
   display: flex;
   align-items: center;
-  gap: 5px;
+  justify-content: center;
+  font-size: 3rem;
+  color: white;
 }
 
-.play-button {
-  width: 100%;
+.game-info {
+  padding: 1.5rem;
 }
 
-@media screen and (max-width: 768px) {
-  .games-container {
-    padding: 20px 0;
-  }
-  
-  .games-grid {
-    grid-template-columns: 1fr;
-    gap: 20px;
-  }
+.game-info h3 {
+  margin: 0 0 0.5rem 0;
+  color: #2c3e50;
 }
-</style> 
+
+.game-info p {
+  margin: 0;
+  color: #666;
+  font-size: 0.9rem;
+}
+</style>
